@@ -1,3 +1,4 @@
+InputForm.tsx:
 import { useRef } from 'react';
 
 import toast from 'react-hot-toast';
@@ -7,6 +8,7 @@ import Image from 'next/image';
 import searchIcon from '@/public/icons/search.jpg';
 
 import searchDiscipline, { DisciplineType } from '@/app/utils/api/searchDiscipline';
+import { validateSearchFields } from '@/app/utils/validation/searchValidation';
 
 import { FormData, FormType, InputFormPropsType } from '../types/types';
 
@@ -51,11 +53,15 @@ async function makeDisciplineSearch(textSearch: string, year: string, period: st
 
 async function handleDisciplineSearch(formData: FormData, setInfos: (infos: Array<DisciplineType>) => void) {
     const { search, year, period } = formData;
-    const textSearch = search.trim();
-
-    if (!textSearch) toast.error('Escreva no nome da disciplina');
-    else if (!year || !period) toast.error('Escolha o ano/período');
-    else await makeDisciplineSearch(textSearch, year, period, setInfos);
+    
+    const errors = validateSearchFields(search, year, period);
+    
+    if (errors.length > 0) {
+        errors.forEach(error => toast.error(error));
+        return;
+    }
+    
+    await makeDisciplineSearch(search.trim(), year, period, setInfos);
 }
 
 export default function InputForm(props: InputFormPropsType) {
